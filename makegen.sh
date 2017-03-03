@@ -3,7 +3,12 @@
 src_folders=$(find src -type d | grep -o -P '(?<=src/).+') # find all subdirectories of src
 obj_folder="bin/obj" # object code directory
 
-mkdir $obj_folder # create bin/obj
+test_obj_folder=$(ls bin/obj)
+
+if [[ $? -ne 0 ]] # if bin/obj directory does not exists
+then
+	mkdir $obj_folder # create bin/obj
+fi
 
 for folders in $src_folders # create corresponding folder in bin/obj
 do
