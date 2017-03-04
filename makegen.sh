@@ -1,5 +1,7 @@
 #!/bin/bash
 
+printf "Collecting information from source files ...\n" 
+
 src_folders=$(find src -type d | grep -o -P '(?<=src/).+') # find all subdirectories of src
 obj_folder="bin/obj" # object code directory
 
@@ -66,19 +68,24 @@ do
 	fi
 done
 
+printf "Generating Makefile ...\n" 
+
 # Write executable Makefile rule
 
 printf "bin/main:$object_files\n" >> Makefile
-printf "	@echo \"Linking \$@ ...\"\n" >> Makefile
+printf "	@echo \"Linking ...\"\n" >> Makefile
 printf "	@g++ $object_files -o bin/main\n\n" >> Makefile
 
 # Write object file rule (no dependency on .h)
 
 for i in $(seq 1 $cnt)
 do
+	current_obj_path=$(printf "${rules[i]}" | grep -o -P '^[^:]+')
+	src_name=$(printf "${rules[i]}" | grep -o -P '(?<=bin/obj/)[^\.]+')
+
 	printf "${rules[i]}\n" >> Makefile
-	printf "	@echo \"Compiling \$@ ...\"\n" >> Makefile
-	printf "	@g++ -c ${files[i]} -o \$@ -std=c++11\n\n" >> Makefile
+	printf "	@echo \"Compiling $src_name.cpp ...\"\n" >> Makefile
+	printf "	@g++ -c ${files[i]} -o $current_obj_path $@\n\n" >> Makefile
 done
 
 # Write clean rule
@@ -88,5 +95,5 @@ printf ".PHONY: clean\n\n" >> Makefile
 printf "clean:\n" >> Makefile
 printf "	@echo \"Removing object files ...\"\n" >> Makefile
 printf "	@rm -rf bin/obj/*.o\n" >> Makefile
-printf "	@echo \"Removing bin/main ...\"\n" >> Makefile
+printf "	@echo \"Removing executable ...\"\n" >> Makefile
 printf "	@rm -rf bin/main" >> Makefile
