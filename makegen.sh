@@ -5,7 +5,7 @@ printf "Collecting information from source files ...\n"
 src_folders=$(find src -type d | grep -o -P '(?<=src/).+') # find all subdirectories of src
 obj_folder="bin/obj" # object code directory
 
-test_obj_folder=$(ls bin/obj)
+test_obj_folder=$(ls bin/obj 2> /dev/null) # redirect any error to /dev/null
 
 if [[ $? -ne 0 ]] # if bin/obj directory does not exists
 then
@@ -26,6 +26,7 @@ all_src=$(find src -type f -name '*.cpp') # find all implementation files
 
 object_files="" # list of all object files
 cnt=0 # counter
+first_obj_file=true
 
 for files in $all_src # search for all cpp except main
 do
@@ -36,7 +37,15 @@ do
 	if [[ $extension != ".h" ]] # for every .cpp files
 	then
 		filepath_in_src=$(printf "$filepath" | grep -o -P '(?<=src/).+') # get file path relative to src
-		object_files+=" $obj_folder/$filepath_in_src$filename.o" # object files 
+		
+		if [[ $first_obj_file == true ]]
+		then
+			first_obj_file=false
+		else
+			object_files+=" "
+		fi
+		
+		object_files+="$obj_folder/$filepath_in_src$filename.o" # object files 
 		
 		includes=$(cat "$files" | grep -o -P '#include *".+"') # get all #include
 		dependencies=$(printf "$includes" | grep -o -P '(?<=")[^"]+') # get all dependencies
@@ -70,13 +79,13 @@ done
 
 printf "Generating Makefile ...\n" 
 
-# Write executable Makefile rule
+# Write linking executable rule
 
-printf "bin/main:$object_files\n" >> Makefile
+printf "bin/main: $object_files\n" >> Makefile
 printf "	@echo \"Linking ...\"\n" >> Makefile
 printf "	@g++ $object_files -o bin/main\n\n" >> Makefile
 
-# Write object file rule (no dependency on .h)
+# Write compiling source file rule
 
 for i in $(seq 1 $cnt)
 do
