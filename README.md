@@ -1,6 +1,6 @@
 #makegen.sh
 
-`makegen` stands for makefile generator, a script that will generate `Makefile` based on dependencies of your C++ source files. This script is still **under development** and has **experimental** results.
+`makegen` stands for makefile generator, a script that will generate `Makefile` based on dependencies of your C++ source files.
 
 This project is purely just for fun and free to use.
 
