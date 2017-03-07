@@ -105,8 +105,16 @@ then
 
 	printf "clean:\n" >> Makefile
 	printf "	@echo \"Removing object files ...\"\n" >> Makefile
-	printf "	@rm -rf bin/obj/*.o\n" >> Makefile
-	printf "	@echo \"Removing executable ...\"\n" >> Makefile
+	printf "	@rm -rf bin/obj\n" >> Makefile
+	printf "	@mkdir bin/obj\n" >> Makefile
+	
+	for folders in $src_folders # create corresponding folder in bin/obj
+	do
+		object_path="$obj_folder/$folders" # concat path
+		printf "	@mkdir -p \"$object_path\"\n" >> Makefile # create folder
+	done
+	
+	printf "\n	@echo \"Removing executable ...\"\n" >> Makefile
 	printf "	@rm -rf bin/main" >> Makefile
 else
 	printf "Cannot find \"src\" folder. Please put your source files (except drivers) in \"src\" folder.\n"
