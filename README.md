@@ -15,8 +15,7 @@ Although by now you can run the script manually, for ease of use it is recommend
 
 1. Move `makegen.sh` to its proper place such as `~/.local/bin/`.
     For example: `mv makegen.sh ~/.local/bin/`
-2. Set alias to run makegen:
-    For example, provided you use:
+2. Set alias to run makegen. For example, provided you use:
     * Bash:
         `echo "alias makegen='/usr/bin/makegen.sh'" >> ~/.bash_aliases`
     * Zsh:
