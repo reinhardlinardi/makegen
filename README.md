@@ -21,7 +21,7 @@ Although now you can run the script directly, it is recommended to follow instru
     * Zsh:
         `echo "alias makegen='~/.local/bin/makegen.sh'" >> ~/.zshrc`.
     * Fish:
-        `alias makegen='~/.local/bin/makegen.sh'`.
+        `alias makegen='~/.local/bin/makegen.sh'`
         `funcsave makegen`.
 3. Now you can generate a Makefile for your project just by running `makegen` from your project folder containing `src/`.
 
