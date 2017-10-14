@@ -54,19 +54,13 @@ then
 			
 			((cnt++))
 			rules[cnt]="$obj_folder/$filepath_in_src$filename.o: $files" # add object code name
-			first=true
+			files[cnt]=$files
 			
 			for dependency in $dependencies
 			do
 				# Check all dependencies
 				dependency_name=$(basename $dependency ".h") # get dependency name only
 				dependency_path=$(printf "$all_header" | grep -o -P ".+(?=(?<=/)$dependency_name\.h)") # get dependency path
-				
-				if [[ $first == true ]] # if first
-				then
-					first=false # set first as false
-					files[cnt]=$files
-				fi
 				
 				rules[cnt]+=" $dependency_path$dependency_name.h" # add dependency name
 			done
