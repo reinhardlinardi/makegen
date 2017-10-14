@@ -30,7 +30,7 @@ then
 	cnt=0 # counter
 	first_obj_file=true
 
-	for files in $all_src # search for all cpp except main
+	for files in $all_src # search for all cpp
 	do
 		extension=$(printf "$files" | grep -o -P '\..+$') # get file extension
 		filename=$(basename $files $extension) # get filename
