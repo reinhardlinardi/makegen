@@ -53,9 +53,9 @@ then
 			dependencies=$(printf "$includes" | grep -o -P '(?<=")[^"]+') # get all dependencies
 			
 			((cnt++))
-			rules[cnt]="" # initialize as empty rule
+			rules[cnt]="$obj_folder/$filepath_in_src$filename.o: $files" # add object code name
 			first=true
-		
+			
 			for dependency in $dependencies
 			do
 				# Check all dependencies
@@ -65,7 +65,6 @@ then
 				if [[ $first == true ]] # if first
 				then
 					first=false # set first as false
-					rules[cnt]+="$obj_folder/$filepath_in_src$filename.o: $files" # add object code name
 					files[cnt]=$files
 				fi
 				
