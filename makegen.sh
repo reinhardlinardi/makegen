@@ -32,12 +32,21 @@ CREATE_RUN_SCRIPT= # default value = false
 EXCLUDE_IN_GITIGNORE= # default value = true
 
 
-# Global variable
+# Global variables
 
 config_valid=true # all configurations are valid
 
 src_extension= # determined from language, extension for implementation source files
 header_extension="h" # extension for header source files
+obj_extension="o" # extension for object files
+
+src_folders= # all subdirectories of SRC_ROOT_FOLDER_NAME
+src_files= # all implementation source files
+header_files= # all header source files
+obj_folder_path= # object files root folder, BINARY_FOLDER_NAME/obj
+
+all_obj_files="" # list of all object files needed to build main executable
+cnt=0 # implementation source file counter
 
 
 # Read config parameters
@@ -263,145 +272,248 @@ then
 			CREATE_RUN_SCRIPT=true
 			printf "\e[93mWarning:\e[0m CREATE_RUN_SCRIPT value is not a boolean. Set value to true.\n"
 		fi
-
-
-		# read EXCLUDE_IN_GITIGNORE value, convert to lowercase, remove leading and trailing whitespaces
-		EXCLUDE_IN_GITIGNORE=$(printf "$conf" | grep -o -P '(?<=EXCLUDE_IN_GITIGNORE=).+' | tr '[:upper:]' '[:lower:]' | sed -e "s/^\s*//g" | sed -e "s/\s*$//g")
-		
-		if [[ $EXCLUDE_IN_GITIGNORE == "" ]] # set to default value when value is empty
-		then
-			EXCLUDE_IN_GITIGNORE=true
-		fi
-		
-		if [[ $EXCLUDE_IN_GITIGNORE != true ]] && [[ $EXCLUDE_IN_GITIGNORE != false ]] # set to default value when value is not boolean, and print warning
-		then
-			EXCLUDE_IN_GITIGNORE=true
-			printf "\e[93mWarning:\e[0m EXCLUDE_IN_GITIGNORE value is not a boolean. Set value to true.\n"
-		fi
 	fi
 fi
+
+
+# Final result of read configuration
 
 if [[ $config_valid == false ]] # if there are invalid config(s), abort makefile generation
 then
 	printf "\n\e[91mConfiguration error. Makefile generation aborted.\e[0m"
 	exit 1
 else
-	printf "\e[92mConfiguration loaded. Starting dependency processing...\e[0m"
+	printf "\e[92mConfiguration loaded.\nStarting dependency processing ...\e[0m\n"
 fi
 
 
-# Source file dependency processing
+# Source code directory and file mapping
+
+src_folders=$(find $SRC_ROOT_FOLDER_NAME -type d | grep -o -P "(?<=$SRC_ROOT_FOLDER_NAME/).+") # find all subdirectories of SRC_ROOT_FOLDER_NAME
+src_files=$(find $SRC_ROOT_FOLDER_NAME -type f -name "*.$src_extension") # find all implementation source files
+header_files=$(find $SRC_ROOT_FOLDER_NAME -type f -name "*.$header_extension") # find all header source files
 
 
-if [[ -d src ]] # if src exists and is a directory
+# Object file directory mapping and preparation
+
+if [[ $CREATE_OBJ_FILE == true ]]
 then
-	#printf "Collecting information from source files ...\n"
+	# Set object code directory path
 
-	src_folders=$(find src -type d | grep -o -P '(?<=src/).+') # find all subdirectories of src
-	obj_folder="bin/obj" # object code directory
-
-	test_obj_folder=$(ls bin/obj 2> /dev/null) # redirect any error to /dev/null
-
-	if [[ $? -ne 0 ]] # if bin/obj directory does not exists
+	if [[ $CREATE_BINARY_DIR == true ]]
 	then
-		mkdir -p $obj_folder # create bin/obj
+		obj_folder_path="$BINARY_FOLDER_NAME/"
+
+		if ! [[ -d "$obj_folder_path" ]] # create directory if not exists
+		then
+			mkdir $obj_folder_path
+		fi
+
+		if [[ $CREATE_CORRESPONDING_DIR == true ]]
+		then
+			obj_folder_path+="obj/"
+
+			for src_folder in $src_folders # create corresponding folder in obj_folder_path
+			do
+				obj_file_path="$obj_folder_path$src_folder/" # concat path 
+				mkdir -p "$obj_file_path" # create folder
+			done
+		fi
+	else
+		obj_folder_path="./"
+	fi
+fi
+
+
+# Source files dependency processing
+
+for src_file in $src_files # for every implementation source files
+do
+	# Get file name and file relative path to SRC_ROOT_FOLDER_NAME of current implementation source file
+
+	src_file_name=$(basename $src_file ".$src_extension") # file name
+	src_file_path=$(printf "$src_file" | grep -o -P ".+(?=$src_file_name\.$src_extension)") # file path
+
+	if [[ $CREATE_CORRESPONDING_DIR == true ]]
+	then
+		src_file_path_relative=$(printf "$src_file_path" | grep -o -P "(?<=$SRC_ROOT_FOLDER_NAME/).+") #  file path relative to SRC_ROOT_FOLDER_NAME
+	fi
+	
+	# Add to all object files list
+
+	if [[ $CREATE_CORRESPONDING_DIR == true ]]
+	then
+		all_obj_files+="$obj_folder_path$src_file_path_relative$src_file_name.$obj_extension "
+	else
+		all_obj_files+="$obj_folder_path$src_file_name.$obj_extension "
 	fi
 
-	for folders in $src_folders # create corresponding folder in bin/obj
+	# Get all dependencies
+
+	includes=$(cat "$src_file" | grep -o -P '#include *".+"') # all #include directives
+	dependencies=$(printf "$includes" | grep -o -P '(?<=")[^"]+') # all dependencies
+	
+
+	# Set basic rule and source file name mapping
+
+	((cnt++)) # increment counter
+
+	# Add basic rule
+
+	if [[ $CREATE_CORRESPONDING_DIR == true ]]
+	then
+		rules[cnt]="$obj_folder_path$src_file_path_relative$src_file_name.$obj_extension: $src_file"
+	else
+		rules[cnt]="$obj_folder_path$src_file_name.$obj_extension: $src_file"
+	fi
+	
+	src[cnt]=$src_file # add file name mapping
+	
+
+	# Add all dependency to build rule
+	
+	for dependency in $dependencies # for every dependency
 	do
-		object_path="$obj_folder/$folders" # concat path
-		mkdir -p "$object_path" # create folder
-	done
-
-	touch Makefile # assure Makefile exists
-	rm Makefile # remove Makefile
-
-	all_header=$(find src -type f -name '*.h') # find all header files
-	all_src=$(find src -type f -name '*.cpp') # find all implementation files
-
-	object_files="" # list of all object files
-	cnt=0 # counter
-	first_obj_file=true
-
-	for files in $all_src # search for all cpp
-	do
-		extension=$(printf "$files" | grep -o -P '\..+$') # get file extension
-		filename=$(basename $files $extension) # get filename
-		filepath=$(printf "$files" | grep -o -P ".+(?=$filename$extension)") # get file path
+		dependency_name=$(basename $dependency ".$header_extension") # dependency name
+		dependency_path=$(printf "$header_files" | grep -o -P ".+(?=(?<=/)$dependency_name\.$header_extension)") # dependency path
 		
-		if [[ $extension != ".h" ]] # for every .cpp files
-		then
-			filepath_in_src=$(printf "$filepath" | grep -o -P '(?<=src/).+') # get file path relative to src
-			
-			if [[ $first_obj_file == true ]]
-			then
-				first_obj_file=false
-			else
-				object_files+=" "
-			fi
-			
-			object_files+="$obj_folder/$filepath_in_src$filename.o" # object files
-			
-			includes=$(cat "$files" | grep -o -P '#include *".+"') # get all #include
-			dependencies=$(printf "$includes" | grep -o -P '(?<=")[^"]+') # get all dependencies
-			
-			((cnt++))
-			rules[cnt]="$obj_folder/$filepath_in_src$filename.o: $files" # add object code name
-			files[cnt]=$files
-			
-			for dependency in $dependencies
-			do
-				# Check all dependencies
-				dependency_name=$(basename $dependency ".h") # get dependency name only
-				dependency_path=$(printf "$all_header" | grep -o -P ".+(?=(?<=/)$dependency_name\.h)") # get dependency path
-				
-				rules[cnt]+=" $dependency_path$dependency_name.h" # add dependency name
-			done
-			
-			if [[ ${rules[cnt]} == "" ]]
-			then
-				((cnt--))
-			fi
-		fi
-	done
+		rules[cnt]+=" $dependency_path$dependency_name.$header_extension" # add dependency to rules
+	done	
+done
 
-	#printf "Generating Makefile ...\n"
+# Remove leading and trailing spaces from all_obj_files
+all_obj_files=$(printf "$all_obj_files" | sed -e "s/^\s*//g" | sed -e "s/\s*$//g")
 
-	# Write linking executable rule
+# Add additional flags
 
-	printf "bin/main: $object_files\n" >> Makefile
-	printf "	@echo \"Linking ...\"\n" >> Makefile
-	printf "	@g++ $object_files -o bin/main\n\n" >> Makefile
+if [[ $LANGUAGE_STANDARD != "" ]]
+then
+	if [[ $LANGUAGE == "c" ]]
+	then
+		lang="c"
+	else
+		lang="c++"
+	fi
 
-	# Write compiling source file rule
-
-	for i in $(seq 1 $cnt)
-	do
-		current_obj_path=$(printf "${rules[i]}" | grep -o -P '^[^:]+')
-		src_name=$(printf "${rules[i]}" | grep -o -P '(?<=bin/obj/)[^\.]+')
-
-		printf "${rules[i]}\n" >> Makefile
-		printf "	@echo \"Compiling $src_name.cpp ...\"\n" >> Makefile
-		printf "	@g++ -c ${files[i]} -o $current_obj_path $@\n\n" >> Makefile
-	done
-
-	# Write clean rule
-
-	printf ".PHONY: clean\n\n" >> Makefile
-
-	printf "clean:\n" >> Makefile
-	printf "	@echo \"Removing object files ...\"\n" >> Makefile
-	printf "	@rm -rf bin/obj\n" >> Makefile
-	printf "	@mkdir bin/obj\n" >> Makefile
-	
-	for folders in $src_folders # create corresponding folder in bin/obj
-	do
-		object_path="$obj_folder/$folders" # concat path
-		printf "	@mkdir -p \"$object_path\"\n" >> Makefile # create folder
-	done
-	
-	printf "\n	@echo \"Removing executable ...\"\n" >> Makefile
-	printf "	@rm -rf bin/main" >> Makefile
-else
-	printf "Cannot find \"src\" folder. Please put your source files (except drivers) in \"src\" folder.\n"
+	COMPILE_DEFAULT_FLAGS+=" -std=$lang$LANGUAGE_STANDARD"
 fi
+
+if [[ $ENABLE_DEBUG_INFO == true ]]
+then
+	COMPILE_DEFAULT_FLAGS+=" -g"
+fi
+
+if [[ $ENABLE_OPTIMIZATION == true ]]
+then
+	COMPILE_DEFAULT_FLAGS+=" -O2"
+fi
+
+# Remove leading and trailing spaces from COMPILE_DEFAULT_FLAGS
+COMPILE_DEFAULT_FLAGS=$(printf "$COMPILE_DEFAULT_FLAGS" | sed -e "s/^\s*//g" | sed -e "s/\s*$//g")
+
+
+# Writing Makefile
+
+printf "\e[92mGenerating Makefile ...\e[0m\n"
+
+# Clear old Makefile, create Makefile if not exists
+
+printf "" > Makefile
+
+# Write rules
+
+if [[ $CREATE_OBJ_FILE == true ]]
+then
+	# Write linking rule
+
+	printf "$MAIN_EXECUTABLE_FILE_PATH$MAIN_EXECUTABLE_FILE_NAME: $all_obj_files\n" >> Makefile
+	printf "	@echo \"Linking ...\"\n" >> Makefile
+	printf "	@$COMPILER_COMMAND $all_obj_files -o $MAIN_EXECUTABLE_FILE_PATH$MAIN_EXECUTABLE_FILE_NAME $LINKING_DEFAULT_FLAGS\n\n" >> Makefile
+
+
+	# Write compile rules
+
+	for index in $(seq 1 $cnt)
+	do
+		current_obj_file_path=$(printf "${rules[index]}" | grep -o -P '^[^:]+')
+		src_name=$(basename ${src[index]} ".$src_extension")
+
+		printf "${rules[index]}\n" >> Makefile
+		printf "	@echo \"Compiling $src_name.$src_extension ...\"\n" >> Makefile
+		printf "	@$COMPILER_COMMAND -c ${src[index]} -o $current_obj_file_path $COMPILE_DEFAULT_FLAGS\n\n" >> Makefile
+	done
+else
+	# Write compile and linking rule
+
+	printf "$MAIN_EXECUTABLE_FILE_PATH$MAIN_EXECUTABLE_FILE_NAME: $SRC_ROOT_FOLDER_NAME/$MAIN_SRC_FILE_NAME.$src_extension $header_files\n" >> Makefile
+	printf "	@echo \"Building ...\"\n" >> Makefile
+	printf "	@$COMPILER_COMMAND $src_files -o $MAIN_EXECUTABLE_FILE_PATH$MAIN_EXECUTABLE_FILE_NAME $COMPILE_DEFAULT_FLAGS $LINKING_DEFAULT_FLAGS\n\n" >> Makefile
+fi
+
+
+# Write clean rule
+
+if [[ $CREATE_CLEAN_RULE == true ]]
+then
+	printf ".PHONY: clean\n\n" >> Makefile
+	printf "clean:\n" >> Makefile
+
+	# Write remove all object files rule
+
+	if [[ $CREATE_OBJ_FILE == true ]]
+	then
+		printf "	@echo \"Removing object files ...\"\n" >> Makefile
+		
+		if [[ $CREATE_BINARY_DIR == true ]]
+		then
+			printf "	@rm -rf $obj_folder_path\n" >> Makefile
+			printf "	@mkdir $obj_folder_path\n" >> Makefile
+
+			if [[ $CREATE_CORRESPONDING_DIR == true ]]
+			then
+				for src_folder in $src_folders # create corresponding folder in obj_folder_path
+				do
+					obj_file_path="$obj_folder_path$src_folder/" # concat path 
+					mkdir -p "$obj_file_path" # create folder
+				done
+			fi
+		else
+			printf "	@rm *.o\n" >> Makefile
+		fi
+	fi
+
+	# Write remove executable rule
+
+	printf "\n	@echo \"Removing executable ...\"\n" >> Makefile
+	printf "	@rm -rf $MAIN_EXECUTABLE_FILE_PATH$MAIN_EXECUTABLE_FILE_NAME" >> Makefile
+fi
+
+
+# Write run script
+
+if [[ $CREATE_RUN_SCRIPT == true ]]
+then
+	printf "\e[92mGenerating run script ...\e[0m\n"
+
+	# Clean old run script
+
+	printf "" > run.sh
+
+	# Write script
+
+	printf "#!/bin/bash\n\n" >> run.sh
+
+	if [[ $ENABLE_DEBUG_INFO == true ]]
+	then
+		printf "if [[ \$1 == \"-g\" ]] || [[ \$1 == \"--debug\" ]]\n" >> run.sh
+		printf "then\n" >> run.sh
+		printf "	gdb $MAIN_EXECUTABLE_FILE_PATH$MAIN_EXECUTABLE_FILE_NAME\n" >> run.sh
+		printf "else\n" >> run.sh
+		printf "	$MAIN_EXECUTABLE_FILE_PATH$MAIN_EXECUTABLE_FILE_NAME\n" >> run.sh
+		printf "fi" >> run.sh
+	else
+		printf "$MAIN_EXECUTABLE_FILE_PATH$MAIN_EXECUTABLE_FILE_NAME" >> run.sh
+	fi
+fi
+
+printf "\n\e[92mDone.\e[0m"
