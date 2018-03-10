@@ -52,3 +52,4 @@ The run script is a simple bash script to run the executable.
   - Delete/move source files
   - Add new source files
   - Add/change/delete dependency of source files
+- Consider deleting binary directory, object files, executable, and regenerate your Makefile if you change your configuration.
