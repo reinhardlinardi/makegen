@@ -409,7 +409,7 @@ then
 fi
 
 # Remove leading and trailing spaces from COMPILE_DEFAULT_FLAGS
-COMPILE_DEFAULT_FLAGS=$(printf "$COMPILE_DEFAULT_FLAGS" | sed -e "s/^\s*//g" | sed -e "s/\s*$//g")
+COMPILE_DEFAULT_FLAGS=$(printf -- "$COMPILE_DEFAULT_FLAGS" | sed -e "s/^\s*//g" | sed -e "s/\s*$//g")
 
 
 # Writing Makefile
