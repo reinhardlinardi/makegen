@@ -1,20 +1,25 @@
-# Makegen
+# Makegen v2
 
 ## Overview
 
 Makegen stands for *Makefile generator*.  
-Makegen reads your code dependency and create a Makefile using that information.
+Makegen reads your configuration and generate the appropriate Makefile for you.
+
+## What's new in v2?
+
+Makegen v2 uses lightning-fast optimized binary executable instead of slow fork-everywhere shell script.  
+Makegen v2 is more intelligent, it uses general rules and leave the work to `make` itself.
 
 ## Installation
 
 1. Git clone this repository or download as zip.
-2. Use `chmod +x makegen.sh` to make the script executable.
+2. Give execute permission for binary using `chmod +x makegen` (first time only).
 
 ## Usage
 
-1. Copy *makegen.conf* and *makegen.sh* to your project root directory.
+1. Copy *makegen.conf* and *makegen* to your project root directory.
 2. Adjust config settings as you like.
-3. Run `./makegen.sh` to generate Makefile. If you have configuration errors, the script will tell you.
+3. Run `./makegen` to generate Makefile. You will be noticed for any errors, warnings, and infos.
 4. Use `make` to build your project.
 5. Run the executable and voila!
 
@@ -22,34 +27,28 @@ Makegen reads your code dependency and create a Makefile using that information.
 
 | Config                       | Description                                                                                 |
 |------------------------------|---------------------------------------------------------------------------------------------|
-| LANGUAGE                     | Programming language used. Valid options are "c", "c++", "cpp", or "cplusplus".             |
-| LANGUAGE_STANDARD            | Number to define which standard to use. For C++11, just set 11.                             | 
-| COMPILER_COMMAND             | Command to invoke the compiler. Leave it empty if you prefer gcc for C and g++ for C++.     |
-| ENABLE_DEBUG_INFO            | True or false. If true, `-g` flag will be inserted to Makefile.                             |
-| ENABLE_OPTIMIZATION          | True or false. If true, `-O2` flag will be inserted to Makefile.                            |
-| COMPILE_DEFAULT_FLAGS        | Other flags that you want for compilation. For example, `-Wall`.                            |
-| LINKING_DEFAULT_FLAGS        | Linker flags to use when linking the executable. For most cases, leave it empty.            |
-| CREATE_OBJ_FILE              | True or false. If false, no object files will be produced.                                  |
-| CREATE_BINARY_DIR            | True or false. Set to true if you want a separate folder for object files.                  |
-| BINARY_FOLDER_NAME           | The name of the folder for the object files.                                                |
-| CREATE_CORRESPONDING_DIR     | True or false. If true, path mapping will be provided for source file and its object file.  |                | SRC_ROOT_FOLDER_NAME         | The source code root folder name.                                                           |
-| MAIN_SRC_FILE_NAME           | Source file with main method. Name only, no extension needed.                               |
-| MAIN_EXECUTABLE_FILE_NAME    | The executable name.                                                                        |
-| MAIN_EXECUTABLE_FILE_PATH    | Where to put the executable. **Make sure path ends with forward slash, not folder name**.   |
-| CREATE_CLEAN_RULE            | True or false. True is recommended, so you can use `make clean`.                            |
-| CREATE_RUN_SCRIPT            | True or false. If true, a run script will be created.                                       |
-
-## Run script
-The run script is a simple bash script to run the executable.
-- Use `./run.sh` to run normally.
-- Use `./run.sh -g` or `./run.sh --debug` to run in debug mode using gdb.
+| LANGUAGE                     | Programming language used. Valid options are "c", "c++", "cpp".                             |
+| STANDARD                     | Which standard to use. For example, "c++11".                                                |
+| COMPILER                     | The compiler. `gcc` and `g++` are default values. You can use other compilers like `clang++` too.|
+| ENABLE_DEBUG                 | Add debugging information. If true, "-g" flag will be appended to COMPILE_FLAGS.            |
+| ENABLE_OPTIMIZATION          | Optimize executable binary. If true, "-O2" flag will be appended to COMPILE_FLAGS.          |
+| COMPILE_FLAGS                | Compile flags that you want for compilation. For example, "-Wall".                          |
+| LINKING_FLAGS                | Linker flags to use when linking the executable. For example, "-lm", to use math library in C.            |
+| SRC_ROOT                     | The source code root folder path. The default value is "src".                               |
+| HEADER_ROOT                  | The header files root folder path. Fill this field if you want to use `gcc -I or g++ -I`.   |
+| OBJ_DIR                      | The object files root folder path. This is where the object files will be created. The default value is current directory.|
+| EXEC_BINARY_DIR              | The executable binary folder path. This is where the executable binary will be created. The default value is current directory.|
+| EXEC_BINARY_NAME             | The name of the executable binary. By default, it is "main".                                |
 
 ## Notes
 - **Do not use spaces** for file and folder names.
-- Makefile generated by this script is very simple. Basically, it is a brute-force Makefile.
-- **Very not recommended to try in Windows** (at least on MSYS2). Makefile generation will be very slow, much slower than Linux. Haven't tried WSL, though.
-- Consider running `make clean` and regenerate your Makefile if you do one of the following :
-  - Delete/move source files
-  - Add new source files
-  - Add/change/delete dependency of source files
-- Consider deleting binary directory, object files, executable, and regenerate your Makefile if you change your configuration.
+- **Do not place unit tests inside SRC_ROOT**. Only one file can be the main program.
+- Suitable for **Unix environment only**.
+- The first 5 configurations are case insensitive, **the rest are case sensitive**.
+- Leading and trailing whitespaces will be ignored in all configurations.
+- **Make sure folder path configurations ends with folder name, not with "/"**.
+- Every time you change configuration, consider running `make clean` and regenerate your Makefile.
+
+## Limitations
+- **No language autodetection. LANGUAGE is mandatory**.
+- No multiple executable binaries support.
