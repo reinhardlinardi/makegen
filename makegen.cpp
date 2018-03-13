@@ -39,7 +39,7 @@ string SRC_ROOT = "src"; // Source file root directory : any folder path
 string HEADER_ROOT = ""; // Header file root directory : any folder path, for gcc/g++ -I
 
 string OBJ_DIR = "."; // Object files directory path : any folder path
-string EXEC_BINARY_DIR = "./"; // Executable binary path : any folder path
+string EXEC_BINARY_DIR = "."; // Executable binary path : any folder path
 string EXEC_BINARY_NAME = "main"; // Executable binary name : any file name
 
 
