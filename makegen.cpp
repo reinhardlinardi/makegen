@@ -60,22 +60,6 @@ string to_lowercase(string s)
     return lower_s;
 }
 
-/** Convert string to uppercase. */
-string to_uppercase(string s)
-{
-    size_t len = s.length();
-    string upper_s = "";
-
-    for(size_t idx=0; idx<len; idx++)
-    {
-        if(s[idx] >= 'a' && s[idx] <= 'z') upper_s += (s[idx] - 'a') + 'A';
-        else upper_s += s[idx];
-    }
-
-    return upper_s;
-}
-
-
 /** Main program. */
 
 int main()
@@ -142,7 +126,10 @@ int main()
                         if(LANGUAGE == "c") COMPILER = "gcc";
                         else COMPILER = "g++";
 
-                        string COMPILER_NOTICE = _LIGHT_BLUE_ + "Info: Using " + COMPILER + " as " + to_uppercase(LANGUAGE) + " default compiler." + _RESET_;
+                        string COMPILER_NOTICE = _LIGHT_BLUE_ + "Info: Using " + COMPILER + " as ";
+                        COMPILER_NOTICE += (LANGUAGE == "c")? "C" : "C++";
+                        COMPILER_NOTICE += " default compiler." + _RESET_;
+                        
                         cout << endl << COMPILER_NOTICE;
                     }
                     else COMPILER = to_lowercase(conf_value);
@@ -337,14 +324,14 @@ int main()
         else
         {
             file << "$(EXEC_BINARY): $(OBJ_FILES) | $(EXEC_BINARY_DIR)" << endl;
-            file << "\t@echo \"Linking $@ ...\"" << endl;
+            file << "\t@echo \"" + _LIGHT_BLUE_ + "Linking $@ ...\"" + _RESET_ << endl;
             file << "\t@$(COMPILER) -o $@ $^ $(LINKING_FLAGS)" << endl << endl;
 
             file << "$(EXEC_BINARY_DIR):" << endl;
             file << "\t@mkdir -p $@" << endl << endl;
 
             file << "$(OBJ_DIR)/%.o: %." << LANGUAGE << " | $(OBJ_DIR)" << endl;
-            file << "\t@echo \"Compiling $< ...\"" << endl;
+            file << "\t@echo \"" + _LIGHT_BLUE_ + "Compiling $< ...\"" + _RESET_ << endl;
             file << "\t@$(COMPILER) -o $@ -c $< $(COMPILE_FLAGS)" << endl << endl;
 
             file << "$(OBJ_DIR):" << endl;
