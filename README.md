@@ -35,7 +35,7 @@ Makegen v2 is more intelligent, it uses general rules and leave the work to `mak
 | COMPILE_FLAGS                | Compile flags that you want for compilation. For example, "-Wall".                          |
 | LINKING_FLAGS                | Linker flags to use when linking the executable. For example, "-lm", to use math library in C.            |
 | SRC_ROOT                     | The source code root folder path. The default value is "src".                               |
-| HEADER_ROOT                  | The header files root folder path. Fill this field if you want to use `gcc -I or g++ -I`.   |
+| HEADER_ROOT                  | The header files root folder path. Fill this field if you want to use `gcc -I` or `g++ -I`. |
 | OBJ_DIR                      | The object files root folder path. This is where the object files will be created. The default value is current directory.|
 | EXEC_BINARY_DIR              | The executable binary folder path. This is where the executable binary will be created. The default value is current directory.|
 | EXEC_BINARY_NAME             | The name of the executable binary. By default, it is "main".                                |
