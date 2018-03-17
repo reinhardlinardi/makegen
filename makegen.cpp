@@ -307,11 +307,11 @@ int main()
         if(OBJ_DIR == EXEC_BINARY_DIR)
         {
             file << "$(EXEC_BINARY): $(OBJ_FILES) | $(BUILD_DIR)" << endl;
-            file << "\t@echo \"Linking $@ ...\"" << endl;
+            file << "\t@echo \"" + _LIGHT_BLUE_ + "Linking $@ ..." + _RESET_ + "\"" << endl;
             file << "\t@$(COMPILER) -o $@ $^ $(LINKING_FLAGS)" << endl << endl;
 
             file << "$(BUILD_DIR)/%.o: %." << LANGUAGE << " | $(BUILD_DIR)" << endl;
-            file << "\t@echo \"Compiling $< ...\"" << endl;
+            file << "\t@echo \"" + _LIGHT_BLUE_ + "Compiling $< ..." + _RESET_ + "\"" << endl;
             file << "\t@$(COMPILER) -o $@ -c $< $(COMPILE_FLAGS)" << endl << endl;
 
             file << "$(BUILD_DIR):" << endl;
@@ -324,14 +324,14 @@ int main()
         else
         {
             file << "$(EXEC_BINARY): $(OBJ_FILES) | $(EXEC_BINARY_DIR)" << endl;
-            file << "\t@echo \"" + _LIGHT_BLUE_ + "Linking $@ ...\"" + _RESET_ << endl;
+            file << "\t@echo \"" + _LIGHT_BLUE_ + "Linking $@ ..." + _RESET_ + "\"" << endl;
             file << "\t@$(COMPILER) -o $@ $^ $(LINKING_FLAGS)" << endl << endl;
 
             file << "$(EXEC_BINARY_DIR):" << endl;
             file << "\t@mkdir -p $@" << endl << endl;
 
             file << "$(OBJ_DIR)/%.o: %." << LANGUAGE << " | $(OBJ_DIR)" << endl;
-            file << "\t@echo \"" + _LIGHT_BLUE_ + "Compiling $< ...\"" + _RESET_ << endl;
+            file << "\t@echo \"" + _LIGHT_BLUE_ + "Compiling $< ..." + _RESET_ + "\"" << endl;
             file << "\t@$(COMPILER) -o $@ -c $< $(COMPILE_FLAGS)" << endl << endl;
 
             file << "$(OBJ_DIR):" << endl;
