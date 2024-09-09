@@ -8,24 +8,21 @@ A simple, configurable Makefile generator for C/C++.
 3. Generate Makefile: `./makegen`
 4. Compile: `make`
 
-**Tips**: Run `make clean` to clean build files.
+**Tips**:  
+Run `make clean` to clean build files.
 
 ## Config
-| Name                | Description                           |
-|---------------------|---------------------------------------|
-| LANGUAGE            | c, c++, or cpp                        | 
-| STANDARD            | e.g. c++11                            |
-| COMPILER            | default: gcc/g++                      |
-| ENABLE_DEBUG        | add debug info: -g                    |
-| ENABLE_OPTIMIZATION | optimize executable: -O2              |
-| COMPILE_FLAGS       | additional compile flags, e.g. -Wall  |
-| LINKING_FLAGS       | additional linker flags, e.g. -lm     |
-| SRC_ROOT            | source code root, default: src        |
-| HEADER_ROOT         | header files root, use with: -I       |
-| OBJ_DIR             | object files path, default: .         |
-| EXEC_BINARY_DIR     | executable path, default: .           |
-| EXEC_BINARY_NAME    | executable name, default: main        |
-
-## Notes
-- Path can't contain space and should not end with '/'
-- Test files can't be inside source code root
+| Name                | Value                                   |
+|---------------------|-----------------------------------------|
+| LANGUAGE            | c or c++                                | 
+| STANDARD            | e.g. c99 or c++11                       |
+| COMPILER            | default: gcc or g++                     |
+| DEBUG               | true or false (-g)                      |
+| OPTIMIZE            | true or false (-O2)                     |
+| COMPILER_FLAGS      | additional compiler flags, e.g. -Wall   |
+| LINKER_FLAGS        | additional linker flags, e.g. -lm       |
+| SRC_ROOT            | source code root, default: src          |
+| HEADER_ROOT         | header files root (-I)                  |
+| OBJECT_PATH         | object files directory path, default: . |
+| EXE_PATH            | executable directory path, default: .   |
+| EXE_NAME            | executable name, default: main          |
