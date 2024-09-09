@@ -24,7 +24,7 @@ A simple, configurable Makefile generator for C/C++.
 | HEADER_ROOT         | header files root, use with: -I       |
 | OBJ_DIR             | object files path, default: .         |
 | EXEC_BINARY_DIR     | executable path, default: .           |
-| EXEC_BINARY_NAME    | name of the executable, default: main |
+| EXEC_BINARY_NAME    | executable name, default: main        |
 
 ## Notes
 - Path can't contain space and should not end with '/'
