@@ -17,98 +17,85 @@ const std::string DELIMITER = "=";
 std::string LANGUAGE; // c or c++
 std::string STANDARD; // e.g. c99, c++11
 
-std::string SRC_ROOT = "src"; // source root
-std::string HEADER_ROOT = ""; // header root (gcc/g++ -I)
+std::string SRC_PATH; // source path
+std::string HEADER_PATH; // header path (-I)
 
 std::string COMPILER; // e.g. gcc, g++, clang, clang++
-bool DEBUG = true; // -g
-bool OPTIMIZE = false; // -O2
-std::string COMPILER_FLAGS = ""; // e.g. -Wall
-std::string LINKER_FLAGS = ""; // e.g. -lm
+bool DEBUG; // -g
+bool OPTIMIZE; // -O2
+std::string COMPILER_FLAGS; // e.g. -Wall
+std::string LINKER_FLAGS; // e.g. -lm
 
-std::string OBJECT_PATH = "."; // object files path
-std::string EXE_PATH = "."; // executable path
-std::string EXE_NAME = "main"; // executable name
+std::string OBJECT_PATH; // object files path
+std::string EXE_PATH; // executable path
+std::string EXE_NAME; // executable name
 
 
-std::string remove_spaces(std::string s) {
-    return std::regex_replace(std::regex_replace(s, std::regex("^\\s*"), ""), std::regex("\\s*$"), "");
+std::string trim_whitespace(std::string s) {
+    return std::regex_replace(std::regex_replace(s, std::regex("^\\s+"), ""), std::regex("\\s+$"), "");
 }
 
-std::string replace_spaces(std::string s) {
+std::string format_whitespace(std::string s) {
     return std::regex_replace(s, std::regex("\\s+"), " ");
 }
 
-std::string remove_path_slash(std::string s) {
+std::string format_path(std::string s) {
     return std::regex_replace(s, std::regex("/$"), "");
 }
 
-void read_language(std::string val) {
-    if(val != "c" && val != "c++") {
+void parse_language(std::string val) {
+    LANGUAGE = val == "c" || val == "c++"? val : "";
+    if(LANGUAGE == "") {
         std::cout << std::endl << "error: LANGUAGE invalid";
         exit(1);
     }
-    LANGUAGE = val == "c"? "c" : "c++";
 }
 
-void read_standard(std::string val) {
-    if(val != "") COMPILER_FLAGS += " -std=" + val;
+void set_standard(std::string val) {
+    COMPILER_FLAGS += val == ""? "" : " -std=" + val;
 }
 
-void read_src_root(std::string val) {
-    if(val != "") SRC_ROOT = remove_path_slash(val);
+void set_src_path(std::string val) {
+    SRC_PATH = val == ""? "src" : format_path(val);
 }
 
-void read_header_root(std::string val) {
-    val = remove_path_slash(val);
-    if(val != "") {
-        COMPILER_FLAGS += " -I" + val;
-        HEADER_ROOT = val;
-    }
+void set_header_path(std::string val) {
+    HEADER_PATH = format_path(val);
+    COMPILER_FLAGS += HEADER_PATH == ""? "" : " -I" + HEADER_PATH;
 }
 
-void read_compiler(std::string val) {
-    if(val == "") COMPILER = LANGUAGE == "c"? "gcc" : "g++";
+void set_compiler(std::string val) {
+    COMPILER = val == ""? (LANGUAGE == "c"? "gcc" : "g++") : val;
 }
 
-void read_debug(std::string val) {
-    if(val != "false" && val != "true" && val != "") {
-        std::cout << std::endl << "error: DEBUG invalid";
-        exit(1);
-    }
-
+void set_debug(std::string val) {
     DEBUG = val == "false"? false : true;
-    if(DEBUG) COMPILER_FLAGS += " -g";
+    COMPILER_FLAGS += DEBUG? " -g" : "";
 }
 
-void read_optimize(std::string val) {
-    if(val != "false" && val != "true" && val != "") {
-        std::cout << std::endl << "error: OPTIMIZE invalid";
-        exit(1);
-    }
-
+void set_optimize(std::string val) {
     OPTIMIZE = val == "true"? true : false;
-    if(OPTIMIZE) COMPILER_FLAGS += " -O2";
+    COMPILER_FLAGS += OPTIMIZE? " -O2" : "";
 }
 
-void read_compiler_flags(std::string val) {
-    COMPILER_FLAGS += " " + replace_spaces(val);
+void set_compiler_flags(std::string val) {
+    COMPILER_FLAGS += val == ""? "" : " " + val;
 }
 
-void read_linker_flags(std::string val) {
-    LINKER_FLAGS = replace_spaces(val);
+void set_linker_flags(std::string val) {
+	LINKER_FLAGS = val;
 }
 
-void read_object_path(std::string val) {
-    if(val != "") OBJECT_PATH = remove_path_slash(val);
+void set_object_path(std::string val) {
+    OBJECT_PATH = val == ""? "obj" : format_path(val);
 }
 
-void read_exe_path(std::string val) {
-    if(val != "") EXE_PATH = remove_path_slash(val);
+void set_exe_path(std::string val) {
+    EXE_PATH = val == ""? "bin" : format_path(val);
 }
 
-void read_exe_name(std::string val) {
-    if(val != "") EXE_NAME = val;
+void set_exe_name(std::string val) {
+    EXE_NAME = val == ""? "main" : val;
 }
 
 void read_config() {
@@ -127,27 +114,27 @@ void read_config() {
 
         if(delimiter_idx != line.npos) {
             std::string name = line.substr(0, delimiter_idx);
-            name = remove_spaces(name);
+            name = trim_whitespace(name);
 
             std::string val = line.substr(delimiter_idx+1, line.length()-1);
-            val = remove_spaces(val);
+            val = format_whitespace(trim_whitespace(val));
 
-            if(name == "LANGUAGE") read_language(val);
-            else if(name == "STANDARD") read_standard(val);
-            else if(name == "SRC_ROOT") read_src_root(val);
-            else if(name == "HEADER_ROOT") read_header_root(val);
-            else if(name == "COMPILER") read_compiler(val);
-            else if(name == "DEBUG") read_debug(val);
-            else if(name == "OPTIMIZE") read_optimize(val);
-            else if(name == "COMPILER_FLAGS") read_compiler_flags(val);
-            else if(name == "LINKER_FLAGS") read_linker_flags(val);
-            else if(name == "OBJECT_PATH") read_object_path(val);
-            else if(name == "EXE_PATH") read_exe_path(val);
-            else if(name == "EXE_NAME") read_exe_name(val);
+            if(name == "LANGUAGE") parse_language(val);
+            else if(name == "STANDARD") set_standard(val);
+            else if(name == "SRC_PATH") set_src_path(val);
+            else if(name == "HEADER_PATH") set_header_path(val);
+            else if(name == "COMPILER") set_compiler(val);
+            else if(name == "DEBUG") set_debug(val);
+            else if(name == "OPTIMIZE") set_optimize(val);
+            else if(name == "COMPILER_FLAGS") set_compiler_flags(val);
+            else if(name == "LINKER_FLAGS") set_linker_flags(val);
+            else if(name == "OBJECT_PATH") set_object_path(val);
+            else if(name == "EXE_PATH") set_exe_path(val);
+            else if(name == "EXE_NAME") set_exe_name(val);
         }
     }
 
-    COMPILER_FLAGS = remove_spaces(COMPILER_FLAGS);
+    COMPILER_FLAGS = trim_whitespace(COMPILER_FLAGS);
     file.close();
 }
 
@@ -166,9 +153,7 @@ void generate_makefile() {
     file << "# --- Autogenerated by makegen ---" << std::endl << std::endl;
 
     file << "# Source" << std::endl;
-    file << "SRC_ROOT := " << SRC_ROOT << std::endl;
-    file << "SRC_DIRS := $(shell find $(SRC_ROOT) -type d)" << std::endl;
-    file << "SRC_FILES := $(shell find $(SRC_ROOT) -name '*." << EXT << "' -type f)" << std::endl << std::endl;
+    file << "SRC_PATH := " << SRC_PATH << std::endl << std::endl;
 
     file << "# Build" << std::endl;
     file << "COMPILER := " << COMPILER << std::endl;
@@ -178,13 +163,15 @@ void generate_makefile() {
     file << "# Output" << std::endl;
     file << "OBJECT_PATH := " << OBJECT_PATH << std::endl;
     file << "EXE_PATH := " << EXE_PATH << std::endl;
-    file << "EXE_NAME := " << EXE_NAME << std::endl;
+    file << "EXE_NAME := " << EXE_NAME << std::endl << std::endl;
+
+    file << "# Vars" << std::endl;
+    file << "SRC_FILES := $(shell find $(SRC_PATH) -name '*." << EXT << "' -type f)" << std::endl;
     file << "OBJECT_FILES := $(addprefix $(OBJECT_PATH)/, $(notdir $(patsubst %." << EXT << ", %.o, $(SRC_FILES))))" << std::endl;
     file << "EXE_BINARY := $(EXE_PATH)/$(EXE_NAME)" << std::endl << std::endl;
     
     file << "# Rules" << std::endl;
-    file << ".PHONY : clean" << std::endl;
-    file << "VPATH = $(SRC_DIRS)" << std::endl << std::endl;
+    file << ".PHONY : clean" << std::endl << std::endl;
 
     file << "$(EXE_BINARY): $(OBJECT_FILES) | $(EXE_PATH)" << std::endl;
     file << "\t@echo \"Linking   $@ ...\"" << std::endl;
