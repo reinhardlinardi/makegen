@@ -1,5 +1,5 @@
 # Makegen
-A simple, configurable Makefile generator for C/C++.
+A simple, configurable Makefile generator for C/C++
 
 ## Setup
 1. Copy script and config
@@ -14,17 +14,17 @@ A simple, configurable Makefile generator for C/C++.
 - Clean build: `make clean`  
 
 ## Config
-| Name                | Value                            |
-|---------------------|----------------------------------|
-| LANGUAGE            | **c** or **c++**                 | 
-| STANDARD            | e.g. **c99** or **c++11**        |
-| COMPILER            | any, default: **gcc** or **g++** |
-| DEBUG               | boolean, default: **true**       |
-| OPTIMIZE            | boolean, default: **false**      |
-| COMPILER_FLAGS      | any, e.g. **-Wall**              |
-| LINKER_FLAGS        | any, e.g. **-lm**                |
-| SRC_PATH            | directory path, default: **src** |
-| HEADER_PATH         | directory path                   |
-| OBJECT_PATH         | directory path, default: **obj** |
-| EXE_PATH            | directory path, default: **bin** |
-| EXE_NAME            | any, default: **main**           |
+| Name                | Type    | Value           | Default |
+|---------------------|---------|-----------------|---------|
+| LANGUAGE            | string  | c/c++           | -       | 
+| STANDARD            | string  | any, e.g. c++11 | -       |
+| COMPILER            | string  | any             | gcc/g++ |  
+| DEBUG               | boolean | any             | true    |
+| OPTIMIZE            | boolean | any             | false   |
+| COMPILER_FLAGS      | string  | any, e.g. -Wall | -       |
+| LINKER_FLAGS        | string  | any, e.g. -lm   | -       |
+| SRC_PATH            | path    | any             | src     |
+| HEADER_PATH         | path    | any             | -       |
+| OBJECT_PATH         | path    | any             | obj     |
+| EXE_PATH            | path    | any             | bin     |
+| EXE_NAME            | string  | any             | main    |
