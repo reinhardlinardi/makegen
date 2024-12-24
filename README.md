@@ -2,11 +2,19 @@
 A simple, configurable Makefile generator for C/C++.
 
 ## How to Use
-1. Copy script and config to project root:  
-   `/bin/bash -c 'cp makegen{,.conf} <project-root>'`
-2. Edit config
-3. Generate Makefile: `./makegen`
-4. Compile: `make`
+1. Copy script and config to project root
+```bash
+/bin/bash -c 'cp makegen{,.conf} DEST'
+```
+2. Edit config file makegen.conf
+3. Generate Makefile
+```bash
+./makegen
+```
+4. Compile project
+```bash
+make
+```
 
 **Tips**:  
 Run `make clean` to clean build files.
