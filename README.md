@@ -1,23 +1,17 @@
 # Makegen
 A simple, configurable Makefile generator for C/C++.
 
-## How to Use
-1. Copy script and config to project root
+## Setup
+1. Copy script and config
 ```bash
-/bin/bash -c 'cp makegen{,.conf} DEST'
+/bin/bash -c 'cp makegen{,.conf} SRC_ROOT'
 ```
 2. Edit config file makegen.conf
-3. Generate Makefile
-```bash
-./makegen
-```
-4. Compile project
-```bash
-make
-```
 
-**Tips**:  
-Run `make clean` to clean build files.
+## Usage
+- Generate Makefile: `./makegen`  
+- Build project: `make`  
+- Clean build: `make clean`  
 
 ## Config
 | Name                | Value                            |
